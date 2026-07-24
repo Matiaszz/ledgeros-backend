@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: >
+  LedgerOS - Your Financial Operational System
+
+Globals:
+  Function:
+    Runtime: java21
+    Timeout: 15
+    MemorySize: 512
+    Architectures:
+      - x86_64
+
+Resources:
+
+  LedgerOsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: LedgerOS API
+      StageName: Prod
+
+  # Health Check
+  HealthCheckFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ledgeros-health-check
+      CodeUri: .
+      Handler: com.ledgeros.lambda.functions.HealthCheckFunction::handleRequest
+
+      Events:
+        HealthCheck:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LedgerOsApi
+            Path: /healthcheck
+            Method: GET
+
+  # Create Transaction
+  # CreateTransactionFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: ledgeros-create-transaction
+  #     CodeUri: .
+  #     Handler: com.ledgeros.lambda.functions.CreateTransactionFunction::handleRequest
+  #
+  #     Events:
+  #       CreateTransaction:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref LedgerOsApi
+  #           Path: /transactions
+  #           Method: POST
+
+Outputs:
+
+  ApiUrl:
+    Description: LedgerOS API URL
+    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+
+  HealthCheckUrl:
+    Description: Health Check Endpoint
+    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/healthcheck"
+
+  # CreateTransactionUrl:
+  #   Description: Create Transaction Endpoint
+  #   Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/transactions"
