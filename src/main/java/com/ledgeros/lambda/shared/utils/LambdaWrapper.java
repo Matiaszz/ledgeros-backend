@@ -1,25 +1,25 @@
-package com.ledgeros.lambda.shared.infrastructure.config.impl;
+package com.ledgeros.lambda.shared.utils;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ledgeros.lambda.model.ApiResponse;
-import com.ledgeros.lambda.shared.infrastructure.config.contracts.ResponseEntity;
-import com.ledgeros.lambda.shared.infrastructure.exception.LambdaException;
+import com.ledgeros.lambda.presentation.response.ApiResponse;
+import com.ledgeros.lambda.shared.config.contracts.ResponseEntity;
+import com.ledgeros.lambda.shared.config.impl.ResponseEntityImpl;
+import com.ledgeros.lambda.infrastructure.exception.LambdaException;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Supplier;
 
-import static com.ledgeros.lambda.shared.infrastructure.exception.ExceptionCode.INTERNAL_SERVER_ERROR;
+import static com.ledgeros.lambda.infrastructure.exception.ExceptionCode.INTERNAL_SERVER_ERROR;
 
 @Slf4j
+@NoArgsConstructor
 public final class LambdaWrapper {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
     private static final ResponseEntity RESPONSE_ENTITY = new ResponseEntityImpl();
-
-    private LambdaWrapper() {
-    }
 
     public static <T> APIGatewayProxyResponseEvent execute(Supplier<T> supplier) {
         try {

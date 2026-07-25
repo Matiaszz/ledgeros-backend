@@ -26,7 +26,7 @@ Resources:
     Properties:
       FunctionName: ledgeros-health-check
       CodeUri: .
-      Handler: com.ledgeros.lambda.functions.HealthCheckFunction::handleRequest
+      Handler: com.ledgeros.lambda.presentation.lambda.health.HealthCheckLambda::handleRequest
 
       Events:
         HealthCheck:
@@ -35,22 +35,6 @@ Resources:
             RestApiId: !Ref LedgerOsApi
             Path: /healthcheck
             Method: GET
-
-  # Create Transaction
-  # CreateTransactionFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: ledgeros-create-transaction
-  #     CodeUri: .
-  #     Handler: com.ledgeros.lambda.functions.CreateTransactionFunction::handleRequest
-  #
-  #     Events:
-  #       CreateTransaction:
-  #         Type: Api
-  #         Properties:
-  #           RestApiId: !Ref LedgerOsApi
-  #           Path: /transactions
-  #           Method: POST
 
 Outputs:
 

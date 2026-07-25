@@ -1,7 +1,7 @@
-package com.ledgeros.lambda.shared.infrastructure.config.impl;
+package com.ledgeros.lambda.shared.config.impl;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.ledgeros.lambda.shared.infrastructure.config.contracts.ResponseEntity;
+import com.ledgeros.lambda.shared.config.contracts.ResponseEntity;
 
 public class ResponseEntityImpl implements ResponseEntity {
     private APIGatewayProxyResponseEvent response;

@@ -1,9 +1,6 @@
-package com.ledgeros.lambda.shared.infrastructure.exception;
+package com.ledgeros.lambda.infrastructure.exception;
 
 
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.ledgeros.lambda.model.ApiResponse;
 import lombok.Getter;
 
 @Getter

@@ -1,4 +1,4 @@
-package com.ledgeros.lambda.shared.infrastructure.exception;
+package com.ledgeros.lambda.infrastructure.exception;
 
 public enum ExceptionCode {
     EMAIL_ALREADY_EXISTS, INTERNAL_SERVER_ERROR;
