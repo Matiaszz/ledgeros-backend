@@ -26,7 +26,7 @@ Resources:
     Properties:
       FunctionName: ledgeros-health-check
       CodeUri: .
-      Handler: com.ledgeros.lambda.presentation.lambda.health.HealthCheckLambda::handleRequest
+      Handler: com.ledgeros.presentation.lambda.health.HealthCheckLambda::handleRequest
 
       Events:
         HealthCheck:
@@ -45,7 +45,3 @@ Outputs:
   HealthCheckUrl:
     Description: Health Check Endpoint
     Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/healthcheck"
-
-  # CreateTransactionUrl:
-  #   Description: Create Transaction Endpoint
-  #   Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/transactions"

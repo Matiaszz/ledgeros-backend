@@ -1,12 +1,12 @@
-package com.ledgeros.lambda.presentation.response;
+package com.ledgeros.presentation.response;
 
-import com.ledgeros.lambda.shared.enums.ResponseStatus;
-import com.ledgeros.lambda.infrastructure.exception.ExceptionCode;
-import com.ledgeros.lambda.infrastructure.exception.LambdaException;
+import com.ledgeros.shared.enums.ResponseStatus;
+import com.ledgeros.infrastructure.exception.ExceptionCode;
+import com.ledgeros.infrastructure.exception.LambdaException;
 
 import java.time.Instant;
 
-import static com.ledgeros.lambda.shared.enums.ResponseStatus.*;
+import static com.ledgeros.shared.enums.ResponseStatus.*;
 
 /**
  * Modern Java 21 Record for API responses.

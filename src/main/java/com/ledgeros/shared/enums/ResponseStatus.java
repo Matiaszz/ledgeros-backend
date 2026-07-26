@@ -1,4 +1,4 @@
-package com.ledgeros.lambda.shared.enums;
+package com.ledgeros.shared.enums;
 
 public enum ResponseStatus {
     SUCCESS,

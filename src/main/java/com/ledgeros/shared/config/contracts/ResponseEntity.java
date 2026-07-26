@@ -1,4 +1,4 @@
-package com.ledgeros.lambda.shared.config.contracts;
+package com.ledgeros.shared.config.contracts;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 

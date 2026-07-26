@@ -70,6 +70,19 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- DynamoDB -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>dynamodb</artifactId>
+            <version>2.47.6</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>dynamodb-enhanced</artifactId>
+            <version>2.47.6</version>
+        </dependency>
+
 
         <!-- Logging -->
         <dependency>

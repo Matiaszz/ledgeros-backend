@@ -1,4 +1,4 @@
-package com.ledgeros.lambda.infrastructure.exception;
+package com.ledgeros.infrastructure.exception;
 
 
 import lombok.Getter;

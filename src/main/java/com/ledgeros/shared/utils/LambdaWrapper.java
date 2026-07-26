@@ -1,18 +1,18 @@
-package com.ledgeros.lambda.shared.utils;
+package com.ledgeros.shared.utils;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ledgeros.lambda.presentation.response.ApiResponse;
-import com.ledgeros.lambda.shared.config.contracts.ResponseEntity;
-import com.ledgeros.lambda.shared.config.impl.ResponseEntityImpl;
-import com.ledgeros.lambda.infrastructure.exception.LambdaException;
+import com.ledgeros.presentation.response.ApiResponse;
+import com.ledgeros.shared.config.contracts.ResponseEntity;
+import com.ledgeros.shared.config.impl.ResponseEntityImpl;
+import com.ledgeros.infrastructure.exception.LambdaException;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Supplier;
 
-import static com.ledgeros.lambda.infrastructure.exception.ExceptionCode.INTERNAL_SERVER_ERROR;
+import static com.ledgeros.infrastructure.exception.ExceptionCode.INTERNAL_SERVER_ERROR;
 
 @Slf4j
 @NoArgsConstructor
