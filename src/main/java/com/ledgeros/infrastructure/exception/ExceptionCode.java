@@ -9,17 +9,11 @@ public enum ExceptionCode {
     INTERNAL_SERVER_ERROR;
 
     public int getStatusCode() {
-        switch (this) {
-            case EMAIL_ALREADY_EXISTS:
-                return 409;
-            case UNAUTHORIZED:
-            case INVALID_REFRESH_TOKEN:
-            case REFRESH_TOKEN_EXPIRED:
-                return 401;
-            case FORBIDDEN:
-                return 403;
-            default:
-                return 500;
-        }
+        return switch (this) {
+            case EMAIL_ALREADY_EXISTS -> 409;
+            case UNAUTHORIZED, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_EXPIRED -> 401;
+            case FORBIDDEN -> 403;
+            default -> 500;
+        };
     }
 }

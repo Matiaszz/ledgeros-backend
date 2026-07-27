@@ -29,24 +29,14 @@ public class RefreshTokenUseCase {
         this.jwtUtils = new JwtUtils();
     }
 
-    public TokenResponse execute(RefreshTokenRequest request) {
+    public TokenResponse execute(RefreshTokenRequest request) throws LambdaException {
         if (request == null || request.refreshToken() == null || request.refreshToken().isBlank()) {
             throw new LambdaException("Refresh token is required", INVALID_REFRESH_TOKEN);
         }
 
         RefreshToken storedToken = refreshTokenRepository.findByToken(request.refreshToken());
 
-        if (storedToken == null) {
-            throw new LambdaException("Invalid refresh token", INVALID_REFRESH_TOKEN);
-        }
-
-        if (storedToken.isRevoked()) {
-            throw new LambdaException("Refresh token is revoked", INVALID_REFRESH_TOKEN);
-        }
-
-        if (storedToken.getExpiresAt() != null && storedToken.getExpiresAt().isBefore(Instant.now())) {
-            throw new LambdaException("Refresh token is expired", REFRESH_TOKEN_EXPIRED);
-        }
+        validateToken(storedToken);
 
         User user = userRepository.findById(storedToken.getUserId());
         if (user == null) {
@@ -65,5 +55,19 @@ public class RefreshTokenUseCase {
                 newRefreshToken.getToken(),
                 jwtUtils.getAccessTokenExpirationInSeconds()
         );
+    }
+
+    private void validateToken(RefreshToken token) throws LambdaException {
+        if (token == null) {
+            throw new LambdaException("Invalid refresh token", INVALID_REFRESH_TOKEN);
+        }
+
+        if (token.isRevoked()) {
+            throw new LambdaException("Refresh token is revoked", INVALID_REFRESH_TOKEN);
+        }
+
+        if (token.getExpiresAt() != null && token.getExpiresAt().isBefore(Instant.now())) {
+            throw new LambdaException("Refresh token is expired", REFRESH_TOKEN_EXPIRED);
+        }
     }
 }

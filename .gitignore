@@ -27,7 +27,6 @@ env.json
 *.pfx
 credentials
 aws-credentials*
-env.json
 
 # ==========================================
 # IDEs & Editors
