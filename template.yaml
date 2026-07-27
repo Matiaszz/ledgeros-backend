@@ -7,10 +7,12 @@ Description: >
 Globals:
   Function:
     Runtime: java21
+
     Timeout: 15
     MemorySize: 512
     Architectures:
       - x86_64
+
 
 Resources:
 
@@ -19,15 +21,62 @@ Resources:
     Properties:
       Name: LedgerOS API
       StageName: Prod
+      Auth:
+        Authorizers:
+          CustomAuthorizer:
+            FunctionArn: !GetAtt AuthorizationFunction.Arn
+            FunctionPayloadType: TOKEN
+            Identity:
+              Header: Authorization
 
-  # Health Check
+  # Gateway Response for 401 Unauthorized (Missing or invalid Authorization header)
+  UnauthorizedGatewayResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref LedgerOsApi
+      ResponseType: UNAUTHORIZED
+      StatusCode: '401'
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseTemplates:
+        application/json: '{"status":"ERROR","timestamp":"$context.requestTimeEpoch","data":null,"code":"UNAUTHORIZED"}'
+
+  # Gateway Response for 403 Access Denied (Explicit Deny policy from Custom Authorizer)
+  AccessDeniedGatewayResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref LedgerOsApi
+      ResponseType: ACCESS_DENIED
+      StatusCode: '403'
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseTemplates:
+        application/json: '{"status":"ERROR","timestamp":"$context.requestTimeEpoch","data":null,"code":"FORBIDDEN"}'
+
+  # Authorization Lambda (Custom Authorizer)
+  AuthorizationFunction:
+    Type: AWS::Serverless::Function
+
+    Properties:
+      FunctionName: ledgeros-authorization
+      CodeUri: .
+      Handler: com.ledgeros.presentation.lambda.auth.AuthorizationLambda::handleRequest
+      Environment:
+        Variables:
+          SECRET_NAME: ledgeros/dev/jwt-secret
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:ledgeros/*"
+
+  # Public Health Check
   HealthCheckFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ledgeros-health-check
       CodeUri: .
       Handler: com.ledgeros.presentation.lambda.health.HealthCheckLambda::handleRequest
-
       Events:
         HealthCheck:
           Type: Api
@@ -35,6 +84,23 @@ Resources:
             RestApiId: !Ref LedgerOsApi
             Path: /healthcheck
             Method: GET
+
+  # Protected Health Check (Secured by Custom Authorizer)
+  ProtectedHealthCheckFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ledgeros-protected-health-check
+      CodeUri: .
+      Handler: com.ledgeros.presentation.lambda.health.ProtectedHealthCheckLambda::handleRequest
+      Events:
+        ProtectedHealthCheck:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LedgerOsApi
+            Path: /healthcheck/protected
+            Method: GET
+            Auth:
+              Authorizer: CustomAuthorizer
 
 Outputs:
 
@@ -45,3 +111,7 @@ Outputs:
   HealthCheckUrl:
     Description: Health Check Endpoint
     Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/healthcheck"
+
+  ProtectedHealthCheckUrl:
+    Description: Protected Health Check Endpoint
+    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/healthcheck/protected"

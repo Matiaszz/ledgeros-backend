@@ -1,6 +1,5 @@
 package com.ledgeros.shared.db;
 
-import com.ledgeros.shared.enums.Table;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 

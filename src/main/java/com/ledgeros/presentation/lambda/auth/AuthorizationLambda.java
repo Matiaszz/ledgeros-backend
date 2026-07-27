@@ -2,22 +2,17 @@ package com.ledgeros.presentation.lambda.auth;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayCustomAuthorizerEvent;
+import com.amazonaws.services.lambda.runtime.events.IamPolicyResponse;
+import com.ledgeros.application.AuthorizationUseCase;
 import com.ledgeros.shared.utils.LambdaWrapper;
 
-import java.time.Instant;
-import java.util.Map;
+public class AuthorizationLambda implements RequestHandler<APIGatewayCustomAuthorizerEvent, IamPolicyResponse> {
 
-public class AuthorizationLambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    private final AuthorizationUseCase useCase = new AuthorizationUseCase();
+
     @Override
-    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-        return LambdaWrapper.execute(() ->
-                Map.of(
-                        "status", "UP",
-                        "function", "HealthCheckFunction",
-                        "timestamp", Instant.now()
-                )
-        );
+    public IamPolicyResponse handleRequest(APIGatewayCustomAuthorizerEvent input, Context context) {
+        return useCase.execute(input);
     }
 }
