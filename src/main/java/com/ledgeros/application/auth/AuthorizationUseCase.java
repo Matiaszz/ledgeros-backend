@@ -1,4 +1,4 @@
-package com.ledgeros.application;
+package com.ledgeros.application.auth;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayCustomAuthorizerEvent;
 import com.amazonaws.services.lambda.runtime.events.IamPolicyResponse;
@@ -7,7 +7,6 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.ledgeros.domain.model.User;
-import com.ledgeros.domain.repository.UserRepository;
 import com.ledgeros.shared.utils.SecretsProvider;
 import com.ledgeros.shared.utils.UserUtils;
 import lombok.RequiredArgsConstructor;

@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayCustomAuthorizerEv
 import com.amazonaws.services.lambda.runtime.events.IamPolicyResponse;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.ledgeros.application.auth.AuthorizationUseCase;
 import com.ledgeros.domain.model.User;
 import com.ledgeros.mocks.repositories.MockUserRepository;
 import com.ledgeros.shared.utils.UserUtils;
