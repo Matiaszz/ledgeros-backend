@@ -22,28 +22,22 @@ public class AuthorizationUseCase {
 
     public IamPolicyResponse execute(APIGatewayCustomAuthorizerEvent input) {
         if (input == null || input.getAuthorizationToken() == null) {
-            return generatePolicy("user", "Deny", input != null ? input.getMethodArn() : "*", null);
+            return generateDenyPolicy(input);
         }
 
         String token = input.getAuthorizationToken();
         DecodedJWT decodedJWT = decode(token);
 
         if (decodedJWT == null) {
-            return generatePolicy("user", "Deny", input.getMethodArn(), null);
+            return generateDenyPolicy(input);
         }
 
         try {
             User user = userUtils.getUserFromJWT(decodedJWT);
-            if (user == null || user.getId() == null) {
-                return generatePolicy("user", "Deny", input.getMethodArn(), null);
-            }
-
-            // Fazer mecanismo de refresh token
-
             UUID userId = user.getId();
             return generatePolicy(userId.toString(), "Allow", input.getMethodArn(), Map.of("userId", userId.toString()));
         } catch (Exception e) {
-            return generatePolicy("user", "Deny", input.getMethodArn(), null);
+            return generateDenyPolicy(input);
         }
     }
 
@@ -64,6 +58,10 @@ public class AuthorizationUseCase {
                 )
                 .withContext(contextData)
                 .build();
+    }
+
+    private IamPolicyResponse generateDenyPolicy(APIGatewayCustomAuthorizerEvent input) {
+        return generatePolicy("user", "Deny", input != null ? input.getMethodArn() : "*", null);
     }
 
     private DecodedJWT decode(String token) {

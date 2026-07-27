@@ -21,6 +21,11 @@ Resources:
     Properties:
       Name: LedgerOS API
       StageName: Prod
+      MethodSettings:
+        - ResourcePath: '/*'        # Aplica em todas as rotas
+          HttpMethod: '*'           # Aplica em todos os métodos (GET, POST, etc.)
+          ThrottlingRateLimit: 100  # Requisições médias por segundo (RPS)
+          ThrottlingBurstLimit: 200 # Pico máximo de requisições simultâneas
       Auth:
         Authorizers:
           CustomAuthorizer:
@@ -40,7 +45,7 @@ Resources:
         gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
         gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
       ResponseTemplates:
-        application/json: '{"status":"ERROR","timestamp":"$context.requestTimeEpoch","data":null,"code":"UNAUTHORIZED"}'
+        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"UNAUTHORIZED","message":"$context.error.message"}'
 
   # Gateway Response for 403 Access Denied (Explicit Deny policy from Custom Authorizer)
   AccessDeniedGatewayResponse:
@@ -53,7 +58,83 @@ Resources:
         gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
         gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
       ResponseTemplates:
-        application/json: '{"status":"ERROR","timestamp":"$context.requestTimeEpoch","data":null,"code":"FORBIDDEN"}'
+        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"FORBIDDEN","message":"$context.error.message"}'
+
+  # Gateway Response for Missing Authentication Token
+  MissingAuthenticationTokenGatewayResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref LedgerOsApi
+      ResponseType: MISSING_AUTHENTICATION_TOKEN
+      StatusCode: '401'
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseTemplates:
+        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"UNAUTHORIZED","message":"$context.error.message"}'
+
+  # Gateway Response for Expired Token
+  ExpiredTokenGatewayResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref LedgerOsApi
+      ResponseType: EXPIRED_TOKEN
+      StatusCode: '401'
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseTemplates:
+        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"UNAUTHORIZED","message":"$context.error.message"}'
+
+  # Gateway Response for Authorizer Failure (500)
+  AuthorizerFailureGatewayResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref LedgerOsApi
+      ResponseType: AUTHORIZER_FAILURE
+      StatusCode: '500'
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseTemplates:
+        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"INTERNAL_SERVER_ERROR","message":"Authorizer execution failed"}'
+
+  # Gateway Response for Authorizer Configuration Error (500)
+  AuthorizerConfigurationErrorGatewayResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref LedgerOsApi
+      ResponseType: AUTHORIZER_CONFIGURATION_ERROR
+      StatusCode: '500'
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseTemplates:
+        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"INTERNAL_SERVER_ERROR","message":"Authorizer configuration error"}'
+
+  # Gateway Response for Default 4XX
+  Default4XXGatewayResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref LedgerOsApi
+      ResponseType: DEFAULT_4XX
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseTemplates:
+        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"UNAUTHORIZED","message":"$context.error.message"}'
+
+  # Gateway Response for Default 5XX
+  Default5XXGatewayResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref LedgerOsApi
+      ResponseType: DEFAULT_5XX
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseTemplates:
+        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"INTERNAL_SERVER_ERROR","message":"$context.error.message"}'
 
   # Authorization Lambda (Custom Authorizer)
   AuthorizationFunction:
@@ -102,6 +183,59 @@ Resources:
             Auth:
               Authorizer: CustomAuthorizer
 
+  # Refresh Token Lambda
+  RefreshTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ledgeros-refresh-token
+      CodeUri: .
+      Handler: com.ledgeros.presentation.lambda.auth.RefreshTokenLambda::handleRequest
+      Environment:
+        Variables:
+          SECRET_NAME: ledgeros/dev/jwt-secret
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:ledgeros/*"
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RefreshTokensTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Events:
+        RefreshToken:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LedgerOsApi
+            Path: /auth/refresh
+            Method: POST
+
+  # DynamoDB Tables
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: users
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  RefreshTokensTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: refresh_tokens
+      AttributeDefinitions:
+        - AttributeName: token
+          AttributeType: S
+      KeySchema:
+        - AttributeName: token
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
 Outputs:
 
   ApiUrl:
@@ -115,3 +249,8 @@ Outputs:
   ProtectedHealthCheckUrl:
     Description: Protected Health Check Endpoint
     Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/healthcheck/protected"
+
+  RefreshTokenUrl:
+    Description: Refresh Token Endpoint
+    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/refresh"
+

@@ -4,7 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum Table {
-    USERS("users");
+    USERS("users"),
+    REFRESH_TOKENS("refresh_tokens");
 
     private final String value;
     Table(String value) {

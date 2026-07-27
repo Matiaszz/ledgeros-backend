@@ -56,10 +56,6 @@ public final class LambdaWrapper {
         }
     }
 
-    public static IamPolicyResponse executeAuthorizer(Supplier<IamPolicyResponse> supplier) {
-        return executeAuthorizer(supplier, "*");
-    }
-
     public static IamPolicyResponse executeAuthorizer(Supplier<IamPolicyResponse> supplier, String methodArn) {
         try {
             return supplier.get();
