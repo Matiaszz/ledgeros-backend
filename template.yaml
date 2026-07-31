@@ -21,6 +21,12 @@ Parameters:
   Stage:
     Type: String
     Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+Conditions:
+  IsProd: !Equals [!Ref Stage, "prod"]
 
 Resources:
 
@@ -28,9 +34,12 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       Name: LedgerOS API
-      StageName: Prod
+      StageName: !Ref Stage
       Cors:
-        AllowOrigin: "'https://ledgeros-react.vercel.app'"
+        AllowOrigin: !If
+          - IsProd
+          - "'https://ledgeros-react.vercel.app'"
+          - "'*'"
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         AllowMethods: "'GET,POST,OPTIONS'"
       MethodSettings:

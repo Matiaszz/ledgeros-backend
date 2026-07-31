@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum Table {
 
     USERS("users", "USERS_TABLE_NAME"),
-    REFRESH_TOKENS("refresh_tokens", "REFRESH_TOKENS_TABLE_NAME");
+    REFRESH_TOKENS("refresh-tokens", "REFRESH_TOKENS_TABLE_NAME");
 
     private final String value;
     private final String envVarName;
@@ -18,10 +18,10 @@ public enum Table {
 
     public String getTableName() {
         String envTableName = System.getenv(envVarName);
-        if (envTableName != null && !envTableName.isBlank()) {
+        if (envTableName != null && !envTableName.isBlank() && !envTableName.endsWith("Table")) {
             return envTableName;
         }
-        String stage = System.getenv().getOrDefault("STAGE", "dev");
+        String stage = System.getenv().getOrDefault("STAGE", "prod").toLowerCase();
         return "ledgeros-" + stage + "-" + value;
     }
 }
