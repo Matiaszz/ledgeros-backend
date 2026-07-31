@@ -37,7 +37,7 @@ public class UserRepository implements Repository<User> {
     @Override
     public DynamoDbTable<User> getTable() {
         return DynamoProvider.DYNAMO.table(
-                Table.USERS.getValue(),
+                Table.USERS.getTableName(),
                 TableSchema.fromBean(User.class)
         );
     }

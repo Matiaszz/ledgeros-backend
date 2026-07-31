@@ -13,6 +13,14 @@ Globals:
     Architectures:
       - x86_64
 
+    Environment:
+      Variables:
+        STAGE: !Ref Stage
+
+Parameters:
+  Stage:
+    Type: String
+    Default: dev
 
 Resources:
 
@@ -212,7 +220,7 @@ Resources:
   UsersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: users
+      TableName: !Sub "ledgeros-${Stage}-users"
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
@@ -224,7 +232,7 @@ Resources:
   RefreshTokensTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: refresh_tokens
+      TableName: !Sub "ledgeros-${Stage}-refresh-tokens"
       AttributeDefinitions:
         - AttributeName: token
           AttributeType: S

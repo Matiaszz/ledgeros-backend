@@ -5,6 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.ledgeros.domain.model.RefreshToken;
 import com.ledgeros.domain.repository.RefreshTokenRepository;
 import com.ledgeros.shared.dto.GeneratedRefreshToken;
+import com.ledgeros.shared.dto.RefreshTokenResponse;
+import com.ledgeros.shared.utils.provider.HashProvider;
 import com.ledgeros.shared.utils.provider.SecretsProvider;
 import lombok.RequiredArgsConstructor;
 
@@ -53,8 +55,10 @@ public class JwtUtils {
         Instant now = Instant.now();
         Instant expiresAt = now.plus(REFRESH_TOKEN_EXPIRATION_DAYS, ChronoUnit.DAYS);
 
+        String secret = HashProvider.hash(token);
+
         RefreshToken refreshToken = RefreshToken.builder()
-                .hashToken(token)
+                .hashToken(secret)
                 .userId(userId)
                 .createdAt(now)
                 .expiresAt(expiresAt)
@@ -63,7 +67,7 @@ public class JwtUtils {
                 .build();
 
         RefreshToken saved = refreshTokenRepository.save(refreshToken);
-        return new  GeneratedRefreshToken(token, saved);
+        return new  GeneratedRefreshToken(token, new RefreshTokenResponse(saved));
     }
 
     public long getAccessTokenExpirationInSeconds() {

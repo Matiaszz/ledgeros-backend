@@ -48,7 +48,7 @@ public class RefreshTokenRepository implements Repository<RefreshToken> {
     @Override
     public DynamoDbTable<RefreshToken> getTable() {
         return DynamoProvider.DYNAMO.table(
-                Table.REFRESH_TOKENS.getValue(),
+                Table.REFRESH_TOKENS.getTableName(),
                 TableSchema.fromBean(RefreshToken.class)
         );
     }

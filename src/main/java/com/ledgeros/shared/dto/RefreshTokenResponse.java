@@ -13,7 +13,7 @@ public record RefreshTokenResponse(
         boolean revoked,
         Long ttl
 ) {
-    RefreshTokenResponse(RefreshToken token){
+    public RefreshTokenResponse(RefreshToken token){
         this(token.getId(),
                 token.getUserId(),
                 token.getExpiresAt(),

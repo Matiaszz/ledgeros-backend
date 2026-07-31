@@ -6,14 +6,16 @@ import at.favre.lib.crypto.bcrypt.BCrypt.Verifyer;
 import at.favre.lib.crypto.bcrypt.BCrypt.Result;
 
 public class HashProvider {
-    public static boolean verifyHash(String secret, String hash) {
-        Verifyer verifyer = BCrypt.verifyer();
-        Result result = verifyer.verify(secret.toCharArray(), hash);
+    private static final int COST = 12;
 
-        return result.verified;
+    public static boolean verifyHash(String secret, String hash) {
+        return BCrypt.verifyer()
+                .verify(secret.toCharArray(), hash)
+                .verified;
     }
 
     public static String hash(String secret) {
-
+        return BCrypt.withDefaults()
+                .hashToString(COST, secret.toCharArray());
     }
 }
