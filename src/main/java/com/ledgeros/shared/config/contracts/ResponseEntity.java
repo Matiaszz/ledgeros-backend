@@ -9,8 +9,9 @@ public interface ResponseEntity {
      default void setupHeaders(APIGatewayProxyResponseEvent responseEvent) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
-        headers.put("Access-Control-Allow-Origin", "*");
+        headers.put("Access-Control-Allow-Origin", "http://localhost:5173");
         headers.put("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        headers.put("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
         responseEvent.setHeaders(headers);
     }
 

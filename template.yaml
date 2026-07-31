@@ -7,15 +7,15 @@ Description: >
 Globals:
   Function:
     Runtime: java21
-
     Timeout: 15
     MemorySize: 512
     Architectures:
       - x86_64
-
     Environment:
       Variables:
         STAGE: !Ref Stage
+        USERS_TABLE_NAME: !Ref UsersTable
+        REFRESH_TOKENS_TABLE_NAME: !Ref RefreshTokensTable
 
 Parameters:
   Stage:
@@ -29,11 +29,15 @@ Resources:
     Properties:
       Name: LedgerOS API
       StageName: Prod
+      Cors:
+        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+        AllowMethods: "'GET,POST,OPTIONS'"
       MethodSettings:
-        - ResourcePath: '/*'        # Aplica em todas as rotas
-          HttpMethod: '*'           # Aplica em todos os métodos (GET, POST, etc.)
-          ThrottlingRateLimit: 100  # Requisições médias por segundo (RPS)
-          ThrottlingBurstLimit: 200 # Pico máximo de requisições simultâneas
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          ThrottlingRateLimit: 100
+          ThrottlingBurstLimit: 200
       Auth:
         Authorizers:
           CustomAuthorizer:
@@ -42,112 +46,9 @@ Resources:
             Identity:
               Header: Authorization
 
-  # Gateway Response for 401 Unauthorized (Missing or invalid Authorization header)
-  UnauthorizedGatewayResponse:
-    Type: AWS::ApiGateway::GatewayResponse
-    Properties:
-      RestApiId: !Ref LedgerOsApi
-      ResponseType: UNAUTHORIZED
-      StatusCode: '401'
-      ResponseParameters:
-        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-      ResponseTemplates:
-        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"UNAUTHORIZED","message":"$context.error.message"}'
-
-  # Gateway Response for 403 Access Denied (Explicit Deny policy from Custom Authorizer)
-  AccessDeniedGatewayResponse:
-    Type: AWS::ApiGateway::GatewayResponse
-    Properties:
-      RestApiId: !Ref LedgerOsApi
-      ResponseType: ACCESS_DENIED
-      StatusCode: '403'
-      ResponseParameters:
-        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-      ResponseTemplates:
-        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"FORBIDDEN","message":"$context.error.message"}'
-
-  # Gateway Response for Missing Authentication Token
-  MissingAuthenticationTokenGatewayResponse:
-    Type: AWS::ApiGateway::GatewayResponse
-    Properties:
-      RestApiId: !Ref LedgerOsApi
-      ResponseType: MISSING_AUTHENTICATION_TOKEN
-      StatusCode: '401'
-      ResponseParameters:
-        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-      ResponseTemplates:
-        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"UNAUTHORIZED","message":"$context.error.message"}'
-
-  # Gateway Response for Expired Token
-  ExpiredTokenGatewayResponse:
-    Type: AWS::ApiGateway::GatewayResponse
-    Properties:
-      RestApiId: !Ref LedgerOsApi
-      ResponseType: EXPIRED_TOKEN
-      StatusCode: '401'
-      ResponseParameters:
-        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-      ResponseTemplates:
-        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"UNAUTHORIZED","message":"$context.error.message"}'
-
-  # Gateway Response for Authorizer Failure (500)
-  AuthorizerFailureGatewayResponse:
-    Type: AWS::ApiGateway::GatewayResponse
-    Properties:
-      RestApiId: !Ref LedgerOsApi
-      ResponseType: AUTHORIZER_FAILURE
-      StatusCode: '500'
-      ResponseParameters:
-        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-      ResponseTemplates:
-        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"INTERNAL_SERVER_ERROR","message":"Authorizer execution failed"}'
-
-  # Gateway Response for Authorizer Configuration Error (500)
-  AuthorizerConfigurationErrorGatewayResponse:
-    Type: AWS::ApiGateway::GatewayResponse
-    Properties:
-      RestApiId: !Ref LedgerOsApi
-      ResponseType: AUTHORIZER_CONFIGURATION_ERROR
-      StatusCode: '500'
-      ResponseParameters:
-        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-      ResponseTemplates:
-        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"INTERNAL_SERVER_ERROR","message":"Authorizer configuration error"}'
-
-  # Gateway Response for Default 4XX
-  Default4XXGatewayResponse:
-    Type: AWS::ApiGateway::GatewayResponse
-    Properties:
-      RestApiId: !Ref LedgerOsApi
-      ResponseType: DEFAULT_4XX
-      ResponseParameters:
-        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-      ResponseTemplates:
-        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"UNAUTHORIZED","message":"$context.error.message"}'
-
-  # Gateway Response for Default 5XX
-  Default5XXGatewayResponse:
-    Type: AWS::ApiGateway::GatewayResponse
-    Properties:
-      RestApiId: !Ref LedgerOsApi
-      ResponseType: DEFAULT_5XX
-      ResponseParameters:
-        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-      ResponseTemplates:
-        application/json: '{"status":"ERROR","timestamp":$context.requestTimeEpoch,"data":null,"code":"INTERNAL_SERVER_ERROR","message":"$context.error.message"}'
-
   # Authorization Lambda (Custom Authorizer)
   AuthorizationFunction:
     Type: AWS::Serverless::Function
-
     Properties:
       FunctionName: ledgeros-authorization
       CodeUri: .
@@ -191,6 +92,143 @@ Resources:
             Auth:
               Authorizer: CustomAuthorizer
 
+  # Register Lambda
+  RegisterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ledgeros-register
+      CodeUri: .
+      Handler: com.ledgeros.presentation.lambda.auth.RegisterLambda::handleRequest
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "dynamodb:*"
+              Resource: "*"
+      Events:
+        Register:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LedgerOsApi
+            Path: /auth/register
+            Method: POST
+
+  # Verify Email Lambda
+  VerifyEmailFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ledgeros-verify-email
+      CodeUri: .
+      Handler: com.ledgeros.presentation.lambda.auth.VerifyEmailLambda::handleRequest
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "dynamodb:*"
+              Resource: "*"
+      Events:
+        VerifyEmail:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LedgerOsApi
+            Path: /auth/verify-email
+            Method: POST
+
+  # Login Lambda
+  LoginFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ledgeros-login
+      CodeUri: .
+      Handler: com.ledgeros.presentation.lambda.auth.LoginLambda::handleRequest
+      Environment:
+        Variables:
+          SECRET_NAME: ledgeros/dev/jwt-secret
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:ledgeros/*"
+        - AmazonDynamoDBFullAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "dynamodb:*"
+              Resource: "*"
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LedgerOsApi
+            Path: /auth/login
+            Method: POST
+
+  # Logout Lambda
+  LogoutFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ledgeros-logout
+      CodeUri: .
+      Handler: com.ledgeros.presentation.lambda.auth.LogoutLambda::handleRequest
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "dynamodb:*"
+              Resource: "*"
+      Events:
+        Logout:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LedgerOsApi
+            Path: /auth/logout
+            Method: POST
+
+  # Forgot Password Lambda
+  ForgotPasswordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ledgeros-forgot-password
+      CodeUri: .
+      Handler: com.ledgeros.presentation.lambda.auth.ForgotPasswordLambda::handleRequest
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "dynamodb:*"
+              Resource: "*"
+      Events:
+        ForgotPassword:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LedgerOsApi
+            Path: /auth/forgot-password
+            Method: POST
+
+  # Reset Password Lambda
+  ResetPasswordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ledgeros-reset-password
+      CodeUri: .
+      Handler: com.ledgeros.presentation.lambda.auth.ResetPasswordLambda::handleRequest
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "dynamodb:*"
+              Resource: "*"
+      Events:
+        ResetPassword:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LedgerOsApi
+            Path: /auth/reset-password
+            Method: POST
+
   # Refresh Token Lambda
   RefreshTokenFunction:
     Type: AWS::Serverless::Function
@@ -204,10 +242,12 @@ Resources:
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:ledgeros/*"
-        - DynamoDBCrudPolicy:
-            TableName: !Ref RefreshTokensTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UsersTable
+        - AmazonDynamoDBFullAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "dynamodb:*"
+              Resource: "*"
       Events:
         RefreshToken:
           Type: Api
@@ -234,10 +274,10 @@ Resources:
     Properties:
       TableName: !Sub "ledgeros-${Stage}-refresh-tokens"
       AttributeDefinitions:
-        - AttributeName: token
+        - AttributeName: id
           AttributeType: S
       KeySchema:
-        - AttributeName: token
+        - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
       TimeToLiveSpecification:
@@ -250,15 +290,26 @@ Outputs:
     Description: LedgerOS API URL
     Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
 
-  HealthCheckUrl:
-    Description: Health Check Endpoint
-    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/healthcheck"
+  LoginUrl:
+    Description: Login Endpoint
+    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/login"
 
-  ProtectedHealthCheckUrl:
-    Description: Protected Health Check Endpoint
-    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/healthcheck/protected"
+  RegisterUrl:
+    Description: Register Endpoint
+    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/register"
 
-  RefreshTokenUrl:
-    Description: Refresh Token Endpoint
-    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/refresh"
+  VerifyEmailUrl:
+    Description: Verify Email Endpoint
+    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/verify-email"
 
+  LogoutUrl:
+    Description: Logout Endpoint
+    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/logout"
+
+  ForgotPasswordUrl:
+    Description: Forgot Password Endpoint
+    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/forgot-password"
+
+  ResetPasswordUrl:
+    Description: Reset Password Endpoint
+    Value: !Sub "https://${LedgerOsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/reset-password"

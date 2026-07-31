@@ -16,6 +16,7 @@ import java.util.UUID;
 @Data
 @Builder
 public class RefreshToken {
+    @Builder.Default
     private UUID id = UUID.randomUUID();
     private String hashToken;
     private UUID userId;
@@ -26,6 +27,9 @@ public class RefreshToken {
 
     @DynamoDbPartitionKey
     public UUID getId() {
-        return id;
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+        return this.id;
     }
 }

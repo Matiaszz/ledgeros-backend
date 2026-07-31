@@ -2,6 +2,14 @@ package com.ledgeros.infrastructure.exception;
 
 public enum ExceptionCode {
     EMAIL_ALREADY_EXISTS,
+    INVALID_CREDENTIALS,
+    EMAIL_NOT_VERIFIED,
+    USER_NOT_FOUND,
+    INVALID_VERIFICATION_CODE,
+    VERIFICATION_CODE_EXPIRED,
+    INVALID_RESET_CODE,
+    RESET_CODE_EXPIRED,
+    INVALID_REQUEST,
     UNAUTHORIZED,
     FORBIDDEN,
     INVALID_REFRESH_TOKEN,
@@ -11,10 +19,11 @@ public enum ExceptionCode {
 
     public int getStatusCode() {
         return switch (this) {
+            case INVALID_REQUEST, INVALID_REFRESH_TOKEN_ID, INVALID_VERIFICATION_CODE, VERIFICATION_CODE_EXPIRED, INVALID_RESET_CODE, RESET_CODE_EXPIRED -> 400;
+            case UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_EXPIRED -> 401;
+            case FORBIDDEN, EMAIL_NOT_VERIFIED -> 403;
+            case USER_NOT_FOUND -> 404;
             case EMAIL_ALREADY_EXISTS -> 409;
-            case INVALID_REFRESH_TOKEN_ID -> 400;
-            case UNAUTHORIZED, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_EXPIRED -> 401;
-            case FORBIDDEN -> 403;
             default -> 500;
         };
     }
