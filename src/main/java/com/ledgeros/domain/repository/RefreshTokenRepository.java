@@ -20,32 +20,27 @@ public class RefreshTokenRepository implements Repository<RefreshToken> {
         return entity;
     }
 
-    @Override
     public RefreshToken findById(UUID id) {
         if (id == null) return null;
-        return findByToken(id.toString());
+
+        return getTable().getItem(Key.builder().addPartitionValue(id).build());
     }
 
-    public RefreshToken findByToken(String token) {
-        if (token == null || token.isBlank()) return null;
-        return getTable().getItem(Key.builder().addPartitionValue(token).build());
-    }
-
-    public void revokeToken(String token) {
-        RefreshToken refreshToken = findByToken(token);
+    public void revokeToken(UUID id) {
+        RefreshToken refreshToken = findById(id);
         if (refreshToken != null) {
             refreshToken.setRevoked(true);
-            save(refreshToken);
+            save(refreshToken); 
         }
     }
 
     @Override
     public boolean delete(RefreshToken entity) {
         try {
-            getTable().deleteItem(Key.builder().addPartitionValue(entity.getToken()).build());
+            getTable().deleteItem(Key.builder().addPartitionValue(entity.getHashToken()).build());
             return true;
         } catch (Exception e) {
-            log.warn("Error deleting RefreshToken: {}", entity.getToken(), e);
+            log.warn("Error deleting RefreshToken: {}", entity.getHashToken(), e);
             return false;
         }
     }

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ledgeros.application.auth.RefreshTokenUseCase;
 import com.ledgeros.infrastructure.exception.LambdaException;
 import com.ledgeros.presentation.request.RefreshTokenRequest;
-import com.ledgeros.shared.utils.LambdaWrapper;
+import com.ledgeros.shared.utils.wrapper.LambdaWrapper;
 
 import static com.ledgeros.infrastructure.exception.ExceptionCode.INVALID_REFRESH_TOKEN;
 

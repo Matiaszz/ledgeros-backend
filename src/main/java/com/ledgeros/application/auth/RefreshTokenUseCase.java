@@ -8,6 +8,8 @@ import com.ledgeros.infrastructure.exception.LambdaException;
 import com.ledgeros.presentation.request.RefreshTokenRequest;
 import com.ledgeros.presentation.response.TokenResponse;
 import com.ledgeros.shared.utils.JwtUtils;
+import com.ledgeros.shared.dto.GeneratedRefreshToken;
+import com.ledgeros.shared.utils.provider.HashProvider;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
@@ -30,13 +32,13 @@ public class RefreshTokenUseCase {
     }
 
     public TokenResponse execute(RefreshTokenRequest request) throws LambdaException {
-        if (request == null || request.refreshToken() == null || request.refreshToken().isBlank()) {
-            throw new LambdaException("Refresh token is required", INVALID_REFRESH_TOKEN);
+        if (request == null || request.refreshTokenId() == null) {
+            throw new LambdaException("Refresh token ID is required", INVALID_REFRESH_TOKEN);
         }
 
-        RefreshToken storedToken = refreshTokenRepository.findByToken(request.refreshToken());
+        RefreshToken storedToken = refreshTokenRepository.findById(request.refreshTokenId());
 
-        validateToken(storedToken);
+        validateToken(request.refreshToken(), storedToken);
 
         User user = userRepository.findById(storedToken.getUserId());
         if (user == null) {
@@ -44,21 +46,25 @@ public class RefreshTokenUseCase {
         }
 
         // Revoke old refresh token (token rotation for security)
-        refreshTokenRepository.revokeToken(storedToken.getToken());
+        refreshTokenRepository.revokeToken(storedToken.getId());
 
         // Issue new tokens
         String newAccessToken = jwtUtils.generateAccessToken(user.getId());
-        RefreshToken newRefreshToken = jwtUtils.generateRefreshToken(user.getId());
+        GeneratedRefreshToken newRefreshToken = jwtUtils.generateRefreshToken(user.getId());
 
         return new TokenResponse(
                 newAccessToken,
-                newRefreshToken.getToken(),
+                newRefreshToken,
                 jwtUtils.getAccessTokenExpirationInSeconds()
         );
     }
 
-    private void validateToken(RefreshToken token) throws LambdaException {
-        if (token == null) {
+    private void validateToken(String requestRefreshToken, RefreshToken token) throws LambdaException {
+        if (token == null || requestRefreshToken == null || requestRefreshToken.isEmpty()) {
+            throw new LambdaException("Invalid refresh token", INVALID_REFRESH_TOKEN);
+        }
+
+        if (!HashProvider.verifyHash(requestRefreshToken, token.getHashToken())) {
             throw new LambdaException("Invalid refresh token", INVALID_REFRESH_TOKEN);
         }
 

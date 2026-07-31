@@ -5,7 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayCustomAuthorizerEvent;
 import com.amazonaws.services.lambda.runtime.events.IamPolicyResponse;
 import com.ledgeros.application.auth.AuthorizationUseCase;
-import com.ledgeros.shared.utils.LambdaWrapper;
+import com.ledgeros.shared.utils.wrapper.LambdaWrapper;
 
 public class AuthorizationLambda implements RequestHandler<APIGatewayCustomAuthorizerEvent, IamPolicyResponse> {
 

@@ -1,4 +1,4 @@
-package com.ledgeros.shared.utils;
+package com.ledgeros.shared.utils.wrapper;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.IamPolicyResponse;

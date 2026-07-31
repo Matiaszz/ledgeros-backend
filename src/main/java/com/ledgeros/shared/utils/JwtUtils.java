@@ -4,10 +4,14 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.ledgeros.domain.model.RefreshToken;
 import com.ledgeros.domain.repository.RefreshTokenRepository;
+import com.ledgeros.shared.dto.GeneratedRefreshToken;
+import com.ledgeros.shared.utils.provider.SecretsProvider;
 import lombok.RequiredArgsConstructor;
 
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
@@ -37,13 +41,20 @@ public class JwtUtils {
                 .sign(algorithm);
     }
 
-    public RefreshToken generateRefreshToken(UUID userId) {
-        String token = UUID.randomUUID().toString();
+    public GeneratedRefreshToken generateRefreshToken(UUID userId) {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[32];
+        random.nextBytes(bytes);
+
+        String token = Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(bytes);
+
         Instant now = Instant.now();
         Instant expiresAt = now.plus(REFRESH_TOKEN_EXPIRATION_DAYS, ChronoUnit.DAYS);
 
         RefreshToken refreshToken = RefreshToken.builder()
-                .token(token)
+                .hashToken(token)
                 .userId(userId)
                 .createdAt(now)
                 .expiresAt(expiresAt)
@@ -51,7 +62,8 @@ public class JwtUtils {
                 .ttl(expiresAt.getEpochSecond())
                 .build();
 
-        return refreshTokenRepository.save(refreshToken);
+        RefreshToken saved = refreshTokenRepository.save(refreshToken);
+        return new  GeneratedRefreshToken(token, saved);
     }
 
     public long getAccessTokenExpirationInSeconds() {

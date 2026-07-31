@@ -1,4 +1,4 @@
-package com.ledgeros.shared.utils;
+package com.ledgeros.shared.utils.provider;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

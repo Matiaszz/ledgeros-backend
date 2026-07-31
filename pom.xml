@@ -109,6 +109,14 @@
             <artifactId>logback-classic</artifactId>
             <version>1.5.18</version>
         </dependency>
+
+        <!-- Bcrypt -->
+        <dependency>
+            <groupId>at.favre.lib</groupId>
+            <artifactId>bcrypt</artifactId>
+            <version>0.10.2</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 
