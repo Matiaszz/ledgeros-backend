@@ -30,7 +30,7 @@ Resources:
       Name: LedgerOS API
       StageName: Prod
       Cors:
-        AllowOrigin: "'*'"
+        AllowOrigin: "'https://ledgeros-react.vercel.app'"
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         AllowMethods: "'GET,POST,OPTIONS'"
       MethodSettings:
