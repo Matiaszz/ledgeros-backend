@@ -37,7 +37,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
 
       - name: SAM Build
-        run: sam build --debug
+        run: sam build
 
       - name: SAM Deploy
-        run: sam deploy --debug --stack-name ledger-os --resolve-s3 --capabilities CAPABILITY_IAM --parameter-overrides Stage=prod --no-confirm-changeset --no-fail-on-empty-changeset
+        run: sam deploy --parameter-overrides Stage=prod --stack-name ledger-os --resolve-s3 --capabilities CAPABILITY_IAM --parameter-overrides Stage=prod --no-confirm-changeset --no-fail-on-empty-changeset
