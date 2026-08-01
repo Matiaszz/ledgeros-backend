@@ -4,33 +4,24 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ledgeros.application.auth.RefreshTokenUseCase;
-import com.ledgeros.infrastructure.exception.LambdaException;
 import com.ledgeros.presentation.request.RefreshTokenRequest;
+import com.ledgeros.shared.utils.parser.RequestParser;
 import com.ledgeros.shared.utils.wrapper.LambdaWrapper;
 
-import static com.ledgeros.infrastructure.exception.ExceptionCode.INVALID_REFRESH_TOKEN;
 
 public class RefreshTokenLambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private final RefreshTokenUseCase useCase = new RefreshTokenUseCase();
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
+    private final RequestParser parser = new RequestParser();
+
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         return LambdaWrapper.execute(() -> {
-            try {
-                if (input == null || input.getBody() == null || input.getBody().isBlank()) {
-                    throw new LambdaException("Request body is empty", INVALID_REFRESH_TOKEN);
-                }
-                RefreshTokenRequest request = OBJECT_MAPPER.readValue(input.getBody(), RefreshTokenRequest.class);
-                return useCase.execute(request);
-            } catch (LambdaException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new LambdaException("Failed to parse request body: " + e.getMessage(), INVALID_REFRESH_TOKEN);
-            }
+            RefreshTokenRequest request = parser.parse(input, RefreshTokenRequest.class);
+
+            return useCase.execute(request);
         });
     }
 }
