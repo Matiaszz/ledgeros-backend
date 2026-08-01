@@ -73,7 +73,7 @@ public class AuthSystemTest {
         assertNotNull(tokenRes.generatedRefreshToken());
 
         // 4b. Logout
-        LogoutRequest logoutReq = new LogoutRequest(tokenRes.generatedRefreshToken().token().id(), null);
+        LogoutRequest logoutReq = new LogoutRequest(tokenRes.generatedRefreshToken().token().id());
         MessageResponse logoutRes = logoutUseCase.execute(logoutReq);
         assertNotNull(logoutRes);
         assertTrue(logoutRes.message().contains("successfully"));

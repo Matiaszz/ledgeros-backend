@@ -44,24 +44,16 @@ public class RegisterUseCase {
         Instant expiresAt = Instant.now().plus(24, ChronoUnit.HOURS);
 
         User newUser = User.builder()
-                .id(UUID.randomUUID())
                 .name(request.name() != null ? request.name().trim() : email.split("@")[0])
                 .email(email)
                 .password(hashedPassword)
-                .emailVerified(false)
                 .verificationCode(code)
                 .verificationCodeExpiresAt(expiresAt)
                 .build();
 
-        userRepository.save(newUser);
+        User saved = userRepository.save(newUser);
 
-        return new RegisterResponse(
-                newUser.getId(),
-                newUser.getName(),
-                newUser.getEmail(),
-                newUser.isEmailVerified(),
-                newUser.getVerificationCode(),
-                "User registered successfully. Please verify your email before logging in."
-        );
+        return new RegisterResponse(saved,
+                "User registered successfully. Please verify your email before logging in.");
     }
 }

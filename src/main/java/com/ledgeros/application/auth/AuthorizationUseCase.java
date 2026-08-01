@@ -35,7 +35,9 @@ public class AuthorizationUseCase {
         try {
             User user = userUtils.getUserFromJWT(decodedJWT);
             UUID userId = user.getId();
-            return generatePolicy(userId.toString(), "Allow", input.getMethodArn(), Map.of("userId", userId.toString()));
+            return generatePolicy(userId.toString(), "Allow", input.getMethodArn(), Map.of(
+                    "userId", userId.toString()
+            ));
         } catch (Exception e) {
             return generateDenyPolicy(input);
         }

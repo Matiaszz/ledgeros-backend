@@ -23,7 +23,8 @@ public class User {
 
     private String email;
     private String password;
-    private boolean emailVerified;
+    @Builder.Default
+    private boolean emailVerified = false;
 
     private String verificationCode;
     private Instant verificationCodeExpiresAt;

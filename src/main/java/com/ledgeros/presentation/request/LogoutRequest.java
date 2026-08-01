@@ -5,15 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;
 
 public record LogoutRequest(
-        UUID refreshTokenId,
-        String refreshToken
+        UUID refreshTokenId
 ) {
     @JsonCreator
     public LogoutRequest(
-            @JsonProperty("refreshTokenId") UUID refreshTokenId,
-            @JsonProperty("refreshToken") String refreshToken
+            @JsonProperty("refreshTokenId") UUID refreshTokenId
     ) {
         this.refreshTokenId = refreshTokenId;
-        this.refreshToken = refreshToken;
     }
 }

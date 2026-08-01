@@ -40,7 +40,7 @@ Resources:
           - IsProd
           - "'https://ledgeros-react.vercel.app'"
           - "'*'"
-        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Requested-With'"
         AllowMethods: "'GET,POST,OPTIONS'"
       MethodSettings:
         - ResourcePath: '/*'
@@ -54,6 +54,30 @@ Resources:
             FunctionPayloadType: TOKEN
             Identity:
               Header: Authorization
+
+  GatewayResponseDefault4XX:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: !If
+          - IsProd
+          - "'https://ledgeros-react.vercel.app'"
+          - "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseType: DEFAULT_4XX
+      RestApiId: !Ref LedgerOsApi
+
+  GatewayResponseDefault5XX:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: !If
+          - IsProd
+          - "'https://ledgeros-react.vercel.app'"
+          - "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseType: DEFAULT_5XX
+      RestApiId: !Ref LedgerOsApi
 
   # Authorization Lambda (Custom Authorizer)
   AuthorizationFunction:

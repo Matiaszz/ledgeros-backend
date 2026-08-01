@@ -11,8 +11,8 @@ public interface ResponseEntity {
         headers.put("Content-Type", "application/json");
 
         // When running sam local start-api, AWS_SAM_LOCAL is automatically set to true by SAM CLI
-        String samEnv = System.getenv("AWS_SAM_LOCAL");
-        boolean isSamLocal = Boolean.getBoolean(samEnv != null ? samEnv : "false");
+        String samEnv = System.getenv().getOrDefault("AWS_SAM_LOCAL", "false");
+         boolean isSamLocal = Boolean.parseBoolean(samEnv);
 
         String allowedOrigin = isSamLocal
                 ? "*"
