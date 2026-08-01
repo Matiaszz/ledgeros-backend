@@ -13,13 +13,12 @@ import com.ledgeros.shared.utils.wrapper.LambdaWrapper;
 public class VerifyEmailLambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private final VerifyEmailUseCase useCase = new VerifyEmailUseCase();
-    private final RequestParser parser = new RequestParser();
 
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         return LambdaWrapper.execute(() -> {
-            VerifyEmailRequest request = parser.parse(input, VerifyEmailRequest.class);
+            VerifyEmailRequest request = RequestParser.parse(input, VerifyEmailRequest.class);
 
             return useCase.execute(request);
         });

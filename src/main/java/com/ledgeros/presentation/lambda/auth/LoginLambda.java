@@ -12,13 +12,12 @@ import com.ledgeros.shared.utils.wrapper.LambdaWrapper;
 public class LoginLambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private final LoginUseCase useCase = new LoginUseCase();
-    private final RequestParser parser = new RequestParser();
 
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         return LambdaWrapper.execute(() -> {
-            LoginRequest request = parser.parse(input, LoginRequest.class);
+            LoginRequest request = RequestParser.parse(input, LoginRequest.class);
 
             return useCase.execute(request);
         });

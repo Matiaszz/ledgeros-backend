@@ -13,12 +13,11 @@ import com.ledgeros.shared.utils.wrapper.LambdaWrapper;
 public class LogoutLambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private final LogoutUseCase useCase = new LogoutUseCase();
-    private final RequestParser parser = new RequestParser();
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         return LambdaWrapper.execute(() -> {
-            LogoutRequest request = parser.parse(input, LogoutRequest.class);
+            LogoutRequest request = RequestParser.parse(input, LogoutRequest.class);
 
             return useCase.execute(request);
         });

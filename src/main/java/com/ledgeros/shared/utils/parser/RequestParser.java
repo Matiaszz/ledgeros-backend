@@ -7,7 +7,7 @@ import static com.ledgeros.infrastructure.exception.ExceptionCode.INVALID_REQUES
 import static com.ledgeros.shared.utils.provider.MapperProvider.OBJECT_MAPPER;
 
 public class RequestParser {
-    public <T> T parse(APIGatewayProxyRequestEvent input, Class<T> expectedParseResult){
+    public static <T> T parse(APIGatewayProxyRequestEvent input, Class<T> expectedParseResult){
         if (input == null || input.getBody() == null || input.getBody().isBlank()) {
             throw new LambdaException("Request body is empty", INVALID_REQUEST);
         }

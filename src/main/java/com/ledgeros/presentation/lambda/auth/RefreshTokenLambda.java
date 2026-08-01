@@ -13,13 +13,12 @@ import com.ledgeros.shared.utils.wrapper.LambdaWrapper;
 public class RefreshTokenLambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private final RefreshTokenUseCase useCase = new RefreshTokenUseCase();
-    private final RequestParser parser = new RequestParser();
 
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         return LambdaWrapper.execute(() -> {
-            RefreshTokenRequest request = parser.parse(input, RefreshTokenRequest.class);
+            RefreshTokenRequest request = RequestParser.parse(input, RefreshTokenRequest.class);
 
             return useCase.execute(request);
         });

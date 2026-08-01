@@ -13,12 +13,11 @@ import com.ledgeros.shared.utils.wrapper.LambdaWrapper;
 public class ResetPasswordLambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private final ResetPasswordUseCase useCase = new ResetPasswordUseCase();
-    private final RequestParser parser = new RequestParser();
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         return LambdaWrapper.execute(() -> {
-            ResetPasswordRequest request = parser.parse(input, ResetPasswordRequest.class);
+            ResetPasswordRequest request = RequestParser.parse(input, ResetPasswordRequest.class);
 
             return useCase.execute(request);
         });

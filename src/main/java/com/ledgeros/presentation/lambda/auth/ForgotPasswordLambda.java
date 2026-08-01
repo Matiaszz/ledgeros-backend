@@ -12,13 +12,11 @@ import com.ledgeros.shared.utils.wrapper.LambdaWrapper;
 public class ForgotPasswordLambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private final ForgotPasswordUseCase useCase = new ForgotPasswordUseCase();
-    private final RequestParser parser = new RequestParser();
-
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         return LambdaWrapper.execute(() -> {
-            ForgotPasswordRequest request = parser.parse(input, ForgotPasswordRequest.class);
+            ForgotPasswordRequest request = RequestParser.parse(input, ForgotPasswordRequest.class);
 
             return useCase.execute(request);
         });
