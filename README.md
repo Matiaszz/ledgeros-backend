@@ -114,3 +114,20 @@ curl http://127.0.0.1:3000/healthcheck
   "code": null
 }
 ```
+
+---
+
+## 🚀 CI/CD & Deploy Automático
+
+O projeto possui um workflow configurado no **GitHub Actions** (`.github/workflows/deploy.yml`) que realiza o deploy automático na AWS a cada push na branch `main` / `master` ou acionamento manual.
+
+### ⚙️ Secrets necessários no GitHub Repository
+Configure no seu repositório GitHub (`Settings > Secrets and variables > Actions`):
+- `AWS_ACCESS_KEY_ID`: ID da chave de acesso IAM com permissões de deploy CloudFormation / Lambda / API Gateway / S3.
+- `AWS_SECRET_ACCESS_KEY`: Chave de acesso secreta IAM.
+- `AWS_REGION` *(Opcional)*: Região AWS (Padrão: `us-east-1`).
+
+### 📦 Passos executados no Pipeline:
+1. `sam build` - Compila o projeto Java 21 e empacota os artefatos Serverless.
+2. `sam deploy --parameter-overrides Stage=prod` - Executa o deploy da stack CloudFormation utilizando os parâmetros de produção.
+
