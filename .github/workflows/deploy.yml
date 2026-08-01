@@ -43,4 +43,5 @@ jobs:
           JWT_SECRET: "secreto_dev_fallback"
 
       - name: SAM Deploy
-        run: sam deploy --parameter-overrides Stage=prod --no-confirm-changeset --no-fail-on-empty-changeset
+        run: sam deploy --stack-name ledger-os --resolve-s3 --capabilities CAPABILITY_IAM --parameter-overrides Stage=prod --no-confirm-changeset --no-fail-on-empty-changeset
+
