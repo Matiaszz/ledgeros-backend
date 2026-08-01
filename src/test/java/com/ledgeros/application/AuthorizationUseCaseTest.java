@@ -8,6 +8,7 @@ import com.ledgeros.application.auth.AuthorizationUseCase;
 import com.ledgeros.domain.model.User;
 import com.ledgeros.mocks.repositories.MockUserRepository;
 import com.ledgeros.shared.utils.UserUtils;
+import com.ledgeros.shared.utils.provider.SecretsProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,8 +18,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AuthorizationUseCaseTest {
-
-    private static final String SECRET = System.getenv().getOrDefault("JWT_SECRET", "secreto_dev_fallback");
 
     private MockUserRepository repository;
     private AuthorizationUseCase authorizationUseCase;
@@ -67,7 +66,7 @@ public class AuthorizationUseCaseTest {
         String token = JWT.create()
                 .withIssuer("ledgeros-backend")
                 .withSubject(userId.toString())
-                .sign(Algorithm.HMAC256(SECRET));
+                .sign(Algorithm.HMAC256(SecretsProvider.getJwtSecret()));
 
         APIGatewayCustomAuthorizerEvent event = new APIGatewayCustomAuthorizerEvent();
         event.setAuthorizationToken("Bearer " + token);
@@ -88,7 +87,7 @@ public class AuthorizationUseCaseTest {
         String token = JWT.create()
                 .withIssuer("ledgeros-backend")
                 .withSubject(userId.toString())
-                .sign(Algorithm.HMAC256(SECRET));
+                .sign(Algorithm.HMAC256(SecretsProvider.getJwtSecret()));
 
         User user = new User();
         user.setId(userId);
