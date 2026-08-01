@@ -38,10 +38,6 @@ jobs:
 
       - name: SAM Build
         run: sam build
-        env:
-          MAVEN_OPTS: "-DskipTests"
-          JWT_SECRET: "secreto_dev_fallback"
 
       - name: SAM Deploy
         run: sam deploy --stack-name ledger-os --resolve-s3 --capabilities CAPABILITY_IAM --parameter-overrides Stage=prod --no-confirm-changeset --no-fail-on-empty-changeset
-
