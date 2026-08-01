@@ -24,7 +24,7 @@ jobs:
           cache: maven
 
       - name: Build Java Package with Maven
-        run: mvn clean package -DskipTests
+        run: mvn clean package
 
       - name: Setup AWS SAM CLI
         uses: aws-actions/setup-sam@v2
@@ -40,4 +40,4 @@ jobs:
         run: sam build
 
       - name: SAM Deploy
-        run: sam deploy --stack-name ledger-os --resolve-s3 --capabilities CAPABILITY_IAM --parameter-overrides Stage=prod --no-confirm-changeset --no-fail-on-empty-changeset
+        run: sam deploy --debug --stack-name ledger-os --resolve-s3 --capabilities CAPABILITY_IAM --parameter-overrides Stage=prod --no-confirm-changeset --no-fail-on-empty-changeset

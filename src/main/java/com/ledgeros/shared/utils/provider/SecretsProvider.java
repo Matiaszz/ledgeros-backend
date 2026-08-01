@@ -27,13 +27,6 @@ public class SecretsProvider {
             return cachedJwtSecret;
         }
 
-
-        String envJwtSecret = System.getenv("JWT_SECRET");
-        if (envJwtSecret != null && !envJwtSecret.isBlank()) {
-            cachedJwtSecret = envJwtSecret;
-            return cachedJwtSecret;
-        }
-
         String secretName = System.getenv().getOrDefault("SECRET_NAME", "ledgeros/dev/jwt-secret");
 
         try {
