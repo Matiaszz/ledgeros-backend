@@ -23,9 +23,6 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      - name: Build Java Package with Maven
-        run: mvn clean package
-
       - name: Setup AWS SAM CLI
         uses: aws-actions/setup-sam@v2
 
